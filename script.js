@@ -29,41 +29,31 @@ var sample_items = [
     }
 ];
 
-
-var data = '';
-
-if(localStorage != undefined){
-    var localStorage_exists = true;
-    if(localStorage.getItem('populated') != '1'){
-        console.log('Setting local storage: initial load.');
-        localStorage.setItem('data' , JSON.stringify(sample_items));
-        localStorage.setItem('populated' , '1');
-        localStorage_needsUpdate = false;
-
-    }
-    data = JSON.parse(localStorage.getItem('data'));
-}
-
-window.addEventListener('beforeunload', function () {
-    if(localStorage_needsUpdate !== false){
-        localStorage.setItem('data',JSON.stringify(data));
-    }
-});
+var data = ''; // The model that we work with in browser. Syncs with localStorage.
 
 var list = document.getElementById("todo_list");
 var new_item = document.getElementById("new_item");
-
 new_item.addEventListener('keydown',function(ev){
     if (ev.keyCode===13){
         addItem();
     }
 })
 
+document.getElementById('reset_button').addEventListener('click', function(ev){
+    localStorage.clear();
+    localStorage_needsUpdate = false;
+    localStorage_exists = '';
+    location.reload();
+    console.log('Reset Complete');
+});
+
 //
 // HELPER FUNCTIONS
 //
 
 var next_x_avaliable = function(colname){
+    // Really only useful for getting the next ID number or sequence number.
+    
     console.log('Next ' + colname + ': ' + (reorder_list(data,colname)[data.length-1][colname] + 1));
     return parseInt(reorder_list(data,colname)[data.length-1][colname]) + 1;
 };
@@ -71,7 +61,7 @@ var next_x_avaliable = function(colname){
 var reorder_list = function (array_of_data, field_to_order_by) {
     return array_of_data.sort(function(a, b){
         return a[field_to_order_by] - b[field_to_order_by]; // if 'a' > 'b', this will
-                                        // reurn positive and b will go first.
+                                                            // reurn positive and b will go first.
     });
 };
 
@@ -96,9 +86,9 @@ var cell_prep = function (el, text_value, id, colname) {
             cell.getAttribute('data-modified') == 'true' &&
             cell.getAttribute('data-value_original') !== current_value
           ){
-            //
-            // We need to save the change to the data object,
-            // and mark that our local storange needs updating.
+            // If this "cell" was modified, then
+            // we need to save the change to the data object,
+            // and note that our local storange needs updating.
             //
             console.log(cell.getAttribute('data-id') + ' updated');
         
@@ -153,7 +143,6 @@ var render_list = function () {
     }
 };
 
-
 var addItem = function(){
     //
     // Add a new object to the model, and 
@@ -180,5 +169,33 @@ var addItem = function(){
 // START THE APPLICAITON
 //
 
+// Make sure that there is something in our local storage. If there
+// isn't, add the sample data. 
+// (In production, we would get data from the server anyway.)
 
+if(localStorage != undefined){
+    var localStorage_exists = true;
+    if(localStorage.getItem('populated') != '1'){
+        console.log('Setting local storage: initial load.');
+        localStorage.setItem('data' , JSON.stringify(sample_items));
+        localStorage.setItem('populated' , '1');
+        localStorage_needsUpdate = false;
+
+    }
+    data = JSON.parse(localStorage.getItem('data'));
+}
+
+//
+// Make sure that we will update the localStorage before leaving
+// the page. 
+// Later, we can have this update with the server.
+//
+
+window.addEventListener('beforeunload', function () {
+    if(localStorage_needsUpdate !== false){
+        localStorage.setItem('data',JSON.stringify(data));
+    }
+});
+
+// Draw the initial todo list.
 render_list();
