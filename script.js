@@ -33,7 +33,7 @@ var data = ''; // The model that we work with in browser. Syncs with localStorag
 
 var list = document.getElementById("todo_list");
 var new_item = document.getElementById("new_item");
-new_item.addEventListener('keydown',function(ev){
+new_item.addEventListener('keyup',function(ev){
     if (ev.keyCode===13){
         addItem();
     }
@@ -148,20 +148,21 @@ var addItem = function(){
     // Add a new object to the model, and 
     // clear out the data entry field.
     //
+    if(new_item.value != ""){
+        var new_item_object =     
+            {
+                description: new_item.value,
+                isDone: "0",
+                sequence: next_x_avaliable('sequence'),
+                id: next_x_avaliable('id')
+            };
 
-    var new_item_object =     
-        {
-            description: new_item.value,
-            isDone: "0",
-            sequence: next_x_avaliable('sequence'),
-            id: next_x_avaliable('id')
-        };
-    
-    data.push(new_item_object);
-    localStorage_needsUpdate = true;
+        data.push(new_item_object);
+        localStorage_needsUpdate = true;
 
-    new_item.value = '';
-    render_list();
+        new_item.value = '';
+        render_list();
+    }
     new_item.focus();
 };
 
